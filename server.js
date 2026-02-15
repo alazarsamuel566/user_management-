@@ -147,10 +147,14 @@ passport.deserializeUser((id, done) => {
 });
 
 // Google OAuth Strategy
+const GOOGLE_CALLBACK_URL = isProduction 
+    ? 'https://user-management-rok5.onrender.com/auth/google/callback'
+    : 'http://localhost:3001/auth/google/callback';
+
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: isProduction ? '/auth/google/callback' : 'http://localhost:3001/auth/google/callback'
+    callbackURL: GOOGLE_CALLBACK_URL
 }, (accessToken, refreshToken, profile, done) => {
     const googleId = profile.id;
     const email = profile.emails[0].value;
