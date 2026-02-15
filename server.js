@@ -147,13 +147,15 @@ passport.deserializeUser((id, done) => {
 });
 
 // Google OAuth Strategy
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || 'YOUR_GOOGLE_CLIENT_SECRET';
 const GOOGLE_CALLBACK_URL = isProduction 
     ? 'https://user-management-rok5.onrender.com/auth/google/callback'
     : 'http://localhost:3001/auth/google/callback';
 
 passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    clientID: GOOGLE_CLIENT_ID,
+    clientSecret: GOOGLE_CLIENT_SECRET,
     callbackURL: GOOGLE_CALLBACK_URL
 }, (accessToken, refreshToken, profile, done) => {
     const googleId = profile.id;
@@ -297,6 +299,29 @@ app.put('/api/users/:id', (req, res) => {
     }).catch(err => res.status(500).json({ error: 'Database error' }));
 });
 
+// Delete user
+app.delete('/api/users/:id', (req, res) => {
+    const userId = req.params.id;
+    
+    getUserById(userId).then(currentUser => {
+        if (!currentUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        if (isProduction) {
+            pool.query('DELETE FROM users WHERE id = $1', [userId], (err) => {
+                if (err) return res.status(500).json({ error: 'Failed to delete user' });
+                res.json({ message: 'User deleted successfully' });
+            });
+        } else {
+            db.run('DELETE FROM users WHERE id = ?', [userId], function(err) {
+                if (err) return res.status(500).json({ error: 'Failed to delete user' });
+                res.json({ message: 'User deleted successfully' });
+            });
+        }
+    }).catch(err => res.status(500).json({ error: 'Database error' }));
+});
+
 // Get users by signup method
 app.get('/api/users/:method', (req, res) => {
     const method = req.params.method;
@@ -366,4 +391,10 @@ app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
     console.log(`Database: ${isProduction ? 'PostgreSQL (Production)' : 'SQLite (Local)'}`);
     console.log(`Admin panel: http://localhost:${PORT}/admin.html`);
+    
+    if (!isProduction && (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET)) {
+        console.log('');
+        console.log('NOTE: Google OAuth not configured for local development.');
+        console.log('To enable: Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env file');
+    }
 });
