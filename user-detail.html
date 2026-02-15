@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --accent: #e94560;
+            --accent-secondary: #0f3460;
+            --text: #16213e;
+            --text-light: #533483;
+            --bg-light: #fafbfc;
+            --sidebar-width: 260px;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--primary);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h2 {
+            font-family: 'Playfair Display', serif;
+            color: white;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h2 i {
+            color: var(--accent);
+        }
+
+        .sidebar-profile {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-profile .avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .sidebar-profile .info .name {
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .sidebar-profile .info .role {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 1rem 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(233, 69, 96, 0.1);
+            color: white;
+            border-left-color: var(--accent);
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .top-bar h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .top-bar .back-btn {
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--bg-light);
+            border-radius: 8px;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .top-bar .back-btn:hover {
+            background: #e9ecef;
+        }
+
+        .content-area {
+            padding: 2rem;
+            max-width: 800px;
+        }
+
+        /* User Detail Card */
+        .detail-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .detail-header {
+            background: linear-gradient(135deg, var(--primary), var(--accent-secondary));
+            padding: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .detail-header .avatar {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--accent);
+        }
+
+        .detail-header .user-info h2 {
+            color: white;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-header .user-info .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .detail-header .user-info .badge.manual {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .detail-header .user-info .badge.google {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .detail-body {
+            padding: 2rem;
+        }
+
+        .detail-section {
+            margin-bottom: 2rem;
+        }
+
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-section h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-label i {
+            width: 20px;
+            color: var(--accent);
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: var(--text);
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-value input {
+            padding: 6px 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            font-weight: 600;
+            color: var(--text);
+            background: white;
+            transition: border-color 0.2s;
+            width: 180px;
+            height: 36px;
+            box-sizing: border-box;
+        }
+
+        .detail-value input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .detail-value input:disabled {
+            background: transparent;
+            border: none;
+            padding: 0;
+            height: auto;
+        }
+
+        .field-edit-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            transition: opacity 0.2s, color 0.2s;
+        }
+
+        .field-edit-btn.hidden {
+            display: none;
+        }
+
+        .field-actions {
+            display: flex;
+            gap: 6px;
+            align-items: stretch;
+            height: 36px;
+        }
+
+        .field-save-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .field-save-btn:hover {
+            background: #d63d56;
+        }
+
+        .field-save-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .field-cancel-btn {
+            background: #e9ecef;
+            color: var(--text);
+            border: none;
+            padding: 0 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .field-cancel-btn:hover {
+            background: #dee2e6;
+        }
+
+        .detail-value input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .detail-value input:disabled {
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        .field-edit-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            transition: opacity 0.2s, color 0.2s;
+        }
+
+        .field-edit-btn:hover {
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        .field-edit-btn.hidden {
+            display: none;
+        }
+
+        .field-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .field-save-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .field-save-btn:hover {
+            background: #d63d56;
+        }
+
+        .field-save-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .field-cancel-btn {
+            background: #e9ecef;
+            color: var(--text);
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .field-cancel-btn:hover {
+            background: #dee2e6;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-label i {
+            width: 20px;
+            color: var(--accent);
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: var(--text);
+            text-align: right;
+        }
+
+        /* Loading & Error States */
+        .loading-state,
+        .error-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .loading-state i {
+            font-size: 3rem;
+            color: var(--accent);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .error-state i {
+            font-size: 3rem;
+            color: #dc3545;
+        }
+
+        .error-state p {
+            color: var(--text-light);
+            margin-top: 1rem;
+        }
+
+        /* Edit Button */
+        .edit-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: white;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .edit-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Success Modal */
+        .success-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .success-modal-overlay.active {
+            display: flex;
+        }
+
+        .success-modal {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            animation: modalSlideIn 0.3s ease;
+            position: relative;
+            padding: 0;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .success-modal-close-x {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .success-modal-close-x:hover {
+            color: #343a40;
+        }
+
+        .success-modal-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 2rem 1rem 3rem 1rem;
+        }
+
+        .success-modal-body p {
+            color: var(--text);
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 15px 0 0 0;
+        }
+
+        .success-modal-close {
+            position: absolute;
+            bottom: 7px;
+            right: 7px;
+            background: transparent;
+            color: var(--text);
+            border: none;
+            padding: 10px 15px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .success-modal-close:hover {
+            color: #6c757d;
+        }
+
+        /* Inline Edit Styles */
+        .detail-value input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            font-weight: 600;
+            color: var(--text);
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        .detail-value input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .detail-value input:disabled {
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        .edit-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+        }
+
+        .btn-save {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-save:hover {
+            background: #d63d56;
+        }
+
+        .btn-save:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-cancel {
+            background: #e9ecef;
+            color: var(--text);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: #dee2e6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .detail-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .detail-value {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-shield-alt"></i> Admin Panel</h2>
+        </div>
+        
+        <div class="sidebar-profile">
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="info">
+                <div class="name">Admin Name</div>
+                <div class="role">Admin</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="admin.html" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="admin.html?tab=users" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            <div class="nav-item" data-tab="contact">
+                <i class="fas fa-envelope"></i>
+                <span>Contact Us</span>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="top-bar">
+            <h1>User Details</h1>
+            <a href="admin.html?tab=users" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                Back to Users
+            </a>
+        </header>
+
+        <div class="content-area">
+            <div class="detail-card" id="detailCard">
+                <!-- Content will be loaded via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <div class="success-modal-overlay" id="successModal">
+            <div class="success-modal">
+                <button class="success-modal-close-x" id="successModalCloseX">&times;</button>
+                <div class="success-modal-body">
+                    <p id="successMessage">User updated successfully!</p>
+                    <button class="success-modal-close" id="successModalClose">OK</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentUser = null;
+
+        async function loadUserDetail() {
+            const detailCard = document.getElementById('detailCard');
+            
+            // Show loading state
+            detailCard.innerHTML = `
+                <div class="loading-state">
+                    <i class="fas fa-spinner"></i>
+                    <p>Loading user details...</p>
+                </div>
+            `;
+
+            // Get user ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('id');
+
+            if (!userId) {
+                detailCard.innerHTML = `
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>No user ID provided.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/users');
+                const users = await response.json();
+                currentUser = users.find(u => u.id === parseInt(userId));
+
+                if (!currentUser) {
+                    detailCard.innerHTML = `
+                        <div class="error-state">
+                            <i class="fas fa-user-slash"></i>
+                            <p>User not found.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Format the date
+                const createdDate = new Date(currentUser.created_at);
+                const formattedDate = createdDate.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const methodBadge = currentUser.signup_method === 'google'
+                    ? '<span class="badge google"><i class="fab fa-google"></i> Google</span>'
+                    : '<span class="badge manual"><i class="fas fa-user"></i> Manual</span>';
+
+                // Hide edit buttons for Google users
+                hideEditButtonsForGoogle();
+
+                detailCard.innerHTML = `
+                    <div class="detail-header">
+                        <div class="avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <h2>${currentUser.first_name} ${currentUser.last_name}</h2>
+                            ${methodBadge}
+                        </div>
+                    </div>
+                    <div class="detail-body">
+                        <div class="detail-section">
+                            <h3>Account Information</h3>
+                            <div class="detail-row">
+                                <span class="detail-label"><i class="fas fa-hashtag"></i> User ID</span>
+                                <span class="detail-value">#${currentUser.id}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label"><i class="fas fa-user"></i> First Name</span>
+                                <span class="detail-value" data-field="first_name">${currentUser.first_name}<button class="field-edit-btn" data-field="first_name"><i class="fas fa-edit"></i></button></span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label"><i class="fas fa-user"></i> Last Name</span>
+                                <span class="detail-value" data-field="last_name">${currentUser.last_name}<button class="field-edit-btn" data-field="last_name"><i class="fas fa-edit"></i></button></span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label"><i class="fas fa-envelope"></i> Email Address</span>
+                                <span class="detail-value" data-field="email">${currentUser.email}<button class="field-edit-btn" data-field="email"><i class="fas fa-edit"></i></button></span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label"><i class="fas fa-sign-in-alt"></i> Signup Method</span>
+                                <span class="detail-value">${currentUser.signup_method === 'google' ? 'Google OAuth' : 'Manual Registration'}</span>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <h3>Account Activity</h3>
+                            <div class="detail-row">
+                                <span class="detail-label"><i class="fas fa-calendar-alt"></i> Joined Date</span>
+                                <span class="detail-value">${formattedDate}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Error loading user:', error);
+                detailCard.innerHTML = `
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Error loading user details. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Individual field edit functionality
+        function closeAllOpenFields() {
+            if (!currentUser) return;
+            document.querySelectorAll('.detail-value[data-field]').forEach(valueEl => {
+                const inputEl = valueEl.querySelector('input');
+                if (inputEl) {
+                    const field = valueEl.dataset.field;
+                    valueEl.innerHTML = `${currentUser[field]}<button class="field-edit-btn" data-field="${field}"><i class="fas fa-edit"></i></button>`;
+                }
+            });
+        }
+
+        document.addEventListener('click', async (e) => {
+            // Handle field edit button click
+            const editBtn = e.target.closest('.field-edit-btn');
+            if (editBtn && currentUser && currentUser.signup_method !== 'google') {
+                const field = editBtn.dataset.field;
+                const valueEl = document.querySelector(`.detail-value[data-field="${field}"]`);
+                if (!valueEl || valueEl.querySelector('input')) return; // Already editing
+                
+                // Close any other open fields first
+                closeAllOpenFields();
+                
+                const currentValue = currentUser[field];
+                valueEl.innerHTML = `
+                    <input type="${field === 'email' ? 'email' : 'text'}" data-field="${field}" value="${currentValue}">
+                    <div class="field-actions">
+                        <button class="field-save-btn" data-field="${field}">Save</button>
+                        <button class="field-cancel-btn" data-field="${field}">Cancel</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Handle field cancel button click
+            const cancelBtn = e.target.closest('.field-cancel-btn');
+            if (cancelBtn) {
+                const field = cancelBtn.dataset.field;
+                const valueEl = document.querySelector(`.detail-value[data-field="${field}"]`);
+                if (valueEl && currentUser) {
+                    valueEl.innerHTML = `${currentUser[field]}<button class="field-edit-btn" data-field="${field}"><i class="fas fa-edit"></i></button>`;
+                }
+                return;
+            }
+
+            // Handle field save button click
+            const saveBtn = e.target.closest('.field-save-btn');
+            if (saveBtn) {
+                const field = saveBtn.dataset.field;
+                const valueEl = document.querySelector(`.detail-value[data-field="${field}"]`);
+                const inputEl = valueEl.querySelector('input');
+                if (!inputEl) return;
+
+                const newValue = inputEl.value;
+                if (newValue === currentUser[field]) {
+                    // No change detected - show modal
+                    document.getElementById('successMessage').textContent = 'No changes detected';
+                    document.getElementById('successModal').classList.add('active');
+                    valueEl.innerHTML = `${currentUser[field]}<button class="field-edit-btn" data-field="${field}"><i class="fas fa-edit"></i></button>`;
+                    return;
+                }
+
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+
+                try {
+                    const response = await fetch(`/api/users/${currentUser.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            first_name: field === 'first_name' ? newValue : currentUser.first_name,
+                            last_name: field === 'last_name' ? newValue : currentUser.last_name,
+                            email: field === 'email' ? newValue : currentUser.email
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        currentUser[field] = newValue;
+                        valueEl.innerHTML = `${newValue}<button class="field-edit-btn" data-field="${field}"><i class="fas fa-edit"></i></button>`;
+                        
+                        // Update heading if first_name or last_name changed
+                        if (field === 'first_name' || field === 'last_name') {
+                            const headingEl = document.querySelector('.detail-header .user-info h2');
+                            if (headingEl) {
+                                headingEl.textContent = `${currentUser.first_name} ${currentUser.last_name}`;
+                            }
+                        }
+                        
+                        document.getElementById('successMessage').textContent = 'User updated successfully!';
+                        document.getElementById('successModal').classList.add('active');
+                    } else {
+                        document.getElementById('successMessage').textContent = data.error || 'Failed to update user';
+                        document.getElementById('successModal').classList.add('active');
+                        valueEl.innerHTML = `${currentUser[field]}<button class="field-edit-btn" data-field="${field}"><i class="fas fa-edit"></i></button>`;
+                    }
+                } catch (error) {
+                    console.error('Error updating user:', error);
+                    document.getElementById('successMessage').textContent = 'Error updating user. Please try again.';
+                    document.getElementById('successModal').classList.add('active');
+                    valueEl.innerHTML = `${currentUser[field]}<button class="field-edit-btn" data-field="${field}"><i class="fas fa-edit"></i></button>`;
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Save';
+                }
+                return;
+            }
+        });
+
+        // Hide edit buttons for Google users
+        function hideEditButtonsForGoogle() {
+            if (currentUser && currentUser.signup_method === 'google') {
+                document.querySelectorAll('.field-edit-btn').forEach(btn => btn.style.display = 'none');
+            }
+        }
+
+        // Success modal close handlers
+        const successModal = document.getElementById('successModal');
+        const successModalClose = document.getElementById('successModalClose');
+        const successModalCloseX = document.getElementById('successModalCloseX');
+        
+        successModalClose.addEventListener('click', () => {
+            successModal.classList.remove('active');
+        });
+
+        successModalCloseX.addEventListener('click', () => {
+            successModal.classList.remove('active');
+        });
+        
+        successModal.addEventListener('click', (e) => {
+            if (e.target === successModal) {
+                successModal.classList.remove('active');
+            }
+        });
+
+        loadUserDetail();
+    </script>
+</body>
+</html>
