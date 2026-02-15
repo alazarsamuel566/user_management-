@@ -996,14 +996,17 @@
             }
         });
 
-        // Hide edit buttons for Google users and show delete button only for manual
+        // Hide edit buttons for Google users, but show delete button for all
         function hideEditButtonsForGoogle() {
             const deleteBtn = document.getElementById('deleteBtn');
-            if (currentUser && currentUser.signup_method === 'google') {
-                document.querySelectorAll('.field-edit-btn').forEach(btn => btn.style.display = 'none');
-                if (deleteBtn) deleteBtn.style.display = 'none';
-            } else if (currentUser) {
+            if (currentUser) {
+                // Show delete button for all users
                 if (deleteBtn) deleteBtn.style.display = 'inline-flex';
+                
+                // Hide edit buttons for Google users
+                if (currentUser.signup_method === 'google') {
+                    document.querySelectorAll('.field-edit-btn').forEach(btn => btn.style.display = 'none');
+                }
             }
         }
 

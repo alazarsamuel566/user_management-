@@ -147,17 +147,22 @@ passport.deserializeUser((id, done) => {
 });
 
 // Google OAuth Strategy
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || 'YOUR_GOOGLE_CLIENT_SECRET';
-const GOOGLE_CALLBACK_URL = isProduction 
-    ? 'https://user-management-rok5.onrender.com/auth/google/callback'
-    : 'http://localhost:3001/auth/google/callback';
+let googleStrategy = null;
 
-passport.use(new GoogleStrategy({
-    clientID: GOOGLE_CLIENT_ID,
-    clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: GOOGLE_CALLBACK_URL
-}, (accessToken, refreshToken, profile, done) => {
+const hasGoogleCredentials = process.env.GOOGLE_CLIENT_ID && 
+                           process.env.GOOGLE_CLIENT_SECRET &&
+                           !process.env.GOOGLE_CLIENT_ID.includes('YOUR_');
+
+if (hasGoogleCredentials) {
+    const GOOGLE_CALLBACK_URL = isProduction 
+        ? 'https://user-management-rok5.onrender.com/auth/google/callback'
+        : 'http://localhost:3001/auth/google/callback';
+
+    googleStrategy = new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: GOOGLE_CALLBACK_URL
+    }, (accessToken, refreshToken, profile, done) => {
     const googleId = profile.id;
     const email = profile.emails[0].value;
     const firstName = profile.name.givenName || 'Google';
@@ -206,7 +211,10 @@ passport.use(new GoogleStrategy({
                 });
         }
     }).catch(done);
-}));
+    });
+    
+    passport.use(googleStrategy);
+}
 
 // Routes
 
@@ -348,15 +356,17 @@ app.get('/api/users/:method', (req, res) => {
     }
 });
 
-// Google OAuth routes
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+// Google OAuth routes (only available if credentials are configured)
+if (hasGoogleCredentials) {
+    app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-app.get('/auth/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/register.html?error=auth_failed' }),
-    (req, res) => {
-        res.redirect('/index.html?registered=true');
-    }
-);
+    app.get('/auth/google/callback', 
+        passport.authenticate('google', { failureRedirect: '/register.html?error=auth_failed' }),
+        (req, res) => {
+            res.redirect('/index.html?registered=true');
+        }
+    );
+}
 
 // Logout
 app.get('/logout', (req, res) => {
@@ -392,9 +402,13 @@ app.listen(PORT, () => {
     console.log(`Database: ${isProduction ? 'PostgreSQL (Production)' : 'SQLite (Local)'}`);
     console.log(`Admin panel: http://localhost:${PORT}/admin.html`);
     
-    if (!isProduction && (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET)) {
-        console.log('');
-        console.log('NOTE: Google OAuth not configured for local development.');
-        console.log('To enable: Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env file');
+    if (!isProduction) {
+        if (hasGoogleCredentials) {
+            console.log('Google OAuth: Enabled');
+        } else {
+            console.log('Google OAuth: Disabled (set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable)');
+        }
+    } else {
+        console.log('Google OAuth: Enabled (Production)');
     }
 });
